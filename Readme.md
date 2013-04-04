@@ -5,7 +5,7 @@ This Arduino sketch requires the [Adafruit NeoPixel Digital RGB LED strip][strip
 
 Dependencies
 ------------
-The [Adafruit 60 LED/meter Digital LED strip][strip] is controlled using the [Adafruit NeoPixel library][library].
+The LED strip is controlled using the [Adafruit NeoPixel library][library].
 
 After downloading, rename folder to 'Adafruit_NeoPixel', install in Arduino Libraries folder, and restart Arduino IDE..
 
