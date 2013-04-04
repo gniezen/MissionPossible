@@ -9,6 +9,6 @@ The [Adafruit 60 LED/meter Digital LED strip][strip] is controlled using the [Ad
 
 After downloading, rename folder to 'Adafruit_NeoPixel', install in Arduino Libraries folder, and restart Arduino IDE..
 
-[pixel]: http://adafruit.com/products/1138
+[strip]: http://adafruit.com/products/1138
 
 [library]: https://github.com/adafruit/Adafruit_NeoPixel
