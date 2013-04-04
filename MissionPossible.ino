@@ -2,8 +2,7 @@
 #include <SPI.h>
 #include <Ethernet.h>
 
-//byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
-byte mac[] = {  0x00, 0x22, 0x4D, 0x99, 0x17, 0x2A }; //spoof of my MAC
+byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
 IPAddress server(173,194,34,102); // Change this to server address
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, 6, NEO_GRB + NEO_KHZ800);
@@ -33,7 +32,7 @@ void setup() {
   if (client.connect(server, 80)) {
     Serial.println("connected");
     // Make a HTTP request:
-    client.println("GET /search?q=arduino HTTP/1.0");
+    client.println("GET /search?q=arduino HTTP/1.0"); //Change this
     client.println();
   } 
   else {
