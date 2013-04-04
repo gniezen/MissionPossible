@@ -37,7 +37,7 @@ void setup() {
     client.println();
   } 
   else {
-    // kf you didn't get a connection to the server:
+    // if you didn't get a connection to the server:
     Serial.println("connection failed");
   }
   
@@ -61,8 +61,6 @@ void loop() {
   race(color, 30,length); 
   
   
-
-
   // if the server's disconnected, stop the client:
   if (!client.connected()) {
     Serial.println();
@@ -96,7 +94,7 @@ void race(uint32_t c, uint8_t wait, uint8_t length) {
       
       readPrint();
       
-      delay(wait);
+      delay(wait); //This should be changed to use the millis() function, see e.g. http://arduino.cc/en/Tutorial/BlinkWithoutDelay
   }
 }
 
