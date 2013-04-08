@@ -8,6 +8,11 @@ IPAddress server(173,194,34,102); // Change this to server address
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, 6, NEO_GRB + NEO_KHZ800);
 EthernetClient client;
 
+long previousMillis = 0;
+long interval = 50; //delay in ms
+uint16_t i = 0;
+
+uint32_t color = Wheel(random(255));
 
 
 void setup() {
@@ -15,6 +20,7 @@ void setup() {
   strip.show(); // Initialize all pixels to 'off'
   randomSeed(analogRead(0));
   
+  /*
   Serial.begin(9600); //Wait for serial monitor
   Serial.println("Waiting for DHCP..");
   // start the Ethernet connection:
@@ -39,6 +45,7 @@ void setup() {
     // if you didn't get a connection to the server:
     Serial.println("connection failed");
   }
+  */
   
   
 }
@@ -53,11 +60,29 @@ void readPrint() {
 }
 
 void loop() {
-  // Some example procedures showing how to display to the pixels:
-  uint32_t color = Wheel(random(255));
-  uint8_t length = 4;
-  car(color,length,0);
-  race(color, 30,length); 
+  
+  uint8_t length = 4; //length of car
+  
+  //readPrint();
+  
+  unsigned long currentMillis = millis();
+  
+  if(currentMillis - previousMillis > interval) {
+    
+    previousMillis = currentMillis; // save the last time you blinked the LED 
+    
+    if(i==0) {
+      //startup
+      color = Wheel(random(255));
+      car(color,length,0);
+    }
+    
+    race(color, 30,length,i); 
+    
+    i+=1;
+    if(i == strip.numPixels())
+      i = 0; //restart
+   }
   
   
   // if the server's disconnected, stop the client:
@@ -82,19 +107,15 @@ void car(uint32_t c, uint8_t length, uint32_t start) {
     strip.show();
     
 }
+
 // Fill the dots one after the other with a color
-void race(uint32_t c, uint8_t wait, uint8_t length) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
+void race(uint32_t c, uint8_t wait, uint8_t length,uint16_t i) {
+  
       strip.setPixelColor(i,strip.Color(0, 0, 0));
       car(c,length,i+1);
       //strip.setPixelColor(i+length,c);
       
       strip.show();
-      
-      readPrint();
-      
-      delay(wait); //This should be changed to use the millis() function, see e.g. http://arduino.cc/en/Tutorial/BlinkWithoutDelay
-  }
 }
 
 uint32_t Wheel(byte WheelPos) {
