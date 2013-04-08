@@ -16,7 +16,7 @@ void setup() {
   randomSeed(analogRead(0));
   
   Serial.begin(9600); //Wait for serial monitor
-  
+  Serial.println("Waiting for DHCP..");
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
