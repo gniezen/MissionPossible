@@ -32,7 +32,7 @@ void setup() {
   for(int i=0; i<nrCars;i++)
     color[i] = Wheel(random(255));
   
-  /*
+  
   Serial.begin(9600); //Wait for serial monitor
   Serial.println("Waiting for DHCP..");
   // start the Ethernet connection:
@@ -57,7 +57,7 @@ void setup() {
     // if you didn't get a connection to the server:
     Serial.println("connection failed");
   }
-  */
+  
   
   
 }
@@ -75,7 +75,7 @@ void loop() {
   
   uint8_t length = 4; //length of car
   
-  //readPrint();
+  readPrint(); //Read values from server
   
   unsigned long currentMillis = millis();
   
@@ -102,12 +102,11 @@ void loop() {
   
   
   // if the server's disconnected, stop the client:
-  /*
   if (!client.connected()) {
     Serial.println();
     Serial.println("disconnecting.");
     client.stop();
-  }*/
+  }
   
   
 }
