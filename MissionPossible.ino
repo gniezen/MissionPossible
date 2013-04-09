@@ -109,6 +109,7 @@ void loop() {
     Serial.println();
     Serial.println("disconnecting.");
     client.stop();
+    ethernetEnabled = false;
   }
   
   
