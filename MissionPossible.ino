@@ -6,6 +6,7 @@
 byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
 IPAddress server(173,194,34,102); // Change this to server address
 EthernetClient client;
+boolean ethernetEnabled = true;
 
 //LED strip settings
 uint16_t stripLength = 240;
@@ -32,30 +33,31 @@ void setup() {
   for(int i=0; i<nrCars;i++)
     color[i] = Wheel(random(255));
   
+  if(ethernetEnabled) {
+    Serial.begin(9600); //Wait for serial monitor
+    Serial.println("Waiting for DHCP..");
+    // start the Ethernet connection:
+    if (Ethernet.begin(mac) == 0) {
+      Serial.println("Failed to configure Ethernet using DHCP");
+      // no point in carrying on, so do nothing forevermore:
+      for(;;)
+        ;
+    }
+    // give the Ethernet shield a second to initialize:
+    delay(1000);
+    Serial.println("connecting...");
   
-  Serial.begin(9600); //Wait for serial monitor
-  Serial.println("Waiting for DHCP..");
-  // start the Ethernet connection:
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed to configure Ethernet using DHCP");
-    // no point in carrying on, so do nothing forevermore:
-    for(;;)
-      ;
-  }
-  // give the Ethernet shield a second to initialize:
-  delay(1000);
-  Serial.println("connecting...");
-
-  // if you get a connection, report back via serial:
-  if (client.connect(server, 80)) {
-    Serial.println("connected");
-    // Make a HTTP request:
-    client.println("GET /search?q=arduino HTTP/1.0"); //Change this
-    client.println();
-  } 
-  else {
-    // if you didn't get a connection to the server:
-    Serial.println("connection failed");
+    // if you get a connection, report back via serial:
+    if (client.connect(server, 80)) {
+      Serial.println("connected");
+      // Make a HTTP request:
+      client.println("GET /search?q=arduino HTTP/1.0"); //Change this
+      client.println();
+    } 
+    else {
+      // if you didn't get a connection to the server:
+      Serial.println("connection failed");
+    }
   }
   
   
@@ -75,7 +77,8 @@ void loop() {
   
   uint8_t length = 4; //length of car
   
-  readPrint(); //Read values from server
+  if(ethernetEnabled)
+    readPrint(); //Read values from server
   
   unsigned long currentMillis = millis();
   
@@ -102,7 +105,7 @@ void loop() {
   
   
   // if the server's disconnected, stop the client:
-  if (!client.connected()) {
+  if (!client.connected() && ethernetEnabled) {
     Serial.println();
     Serial.println("disconnecting.");
     client.stop();
