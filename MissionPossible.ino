@@ -4,7 +4,7 @@
 
 //Ethernet settings
 byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
-IPAddress server(173,194,34,102); // Change this to server address
+IPAddress server(137,44,8,32); // Change this to server address
 EthernetClient client;
 boolean ethernetEnabled = true;
 
@@ -51,7 +51,7 @@ void setup() {
     if (client.connect(server, 80)) {
       Serial.println("connected");
       // Make a HTTP request:
-      client.println("GET /search?q=arduino HTTP/1.0"); //Change this
+      client.println("GET /462694/Mission_Possible/ex.php HTTP/1.0"); //Change this
       client.println();
     } 
     else {
