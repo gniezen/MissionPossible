@@ -4,9 +4,27 @@
 
 //Ethernet settings
 byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
-IPAddress server(137,44,8,32); // Change this to server address
+//String server = "cos-ugrad.swansea.ac.uk"; // Change this to server address
+IPAddress server(173,194,41,102); // Google
 EthernetClient client;
 boolean ethernetEnabled = true;
+
+/*
+For proxy:
+
+// if you get a connection, report back via serial:
+  if (client.connect("proxy.ysgolccc.org.uk", 8080)) {  // This is connecting to the proxy
+    Serial.println("connected");
+
+    // Make a HTTP request through proxy:
+    client.println("GET http://www.actualserver.com/search?q=arduino HTTP/1.0");
+    client.println();
+  }
+
+*/
+
+
+IPAddress ip(10, 80, 110, 200);
 
 //LED strip settings
 uint16_t stripLength = 240;
@@ -35,6 +53,7 @@ void setup() {
   
   if(ethernetEnabled) {
     Serial.begin(9600); //Wait for serial monitor
+    
     Serial.println("Waiting for DHCP..");
     // start the Ethernet connection:
     if (Ethernet.begin(mac) == 0) {
@@ -43,15 +62,19 @@ void setup() {
       for(;;)
         ;
     }
+    //Ethernet.begin(mac,ip); //for static IP
+    
     // give the Ethernet shield a second to initialize:
     delay(1000);
     Serial.println("connecting...");
   
     // if you get a connection, report back via serial:
-    if (client.connect(server, 80)) {
+    if (client.connect("cos-ugrad.swansea.ac.uk", 80)) {
+      //if (client.connect(server, 80)) {
       Serial.println("connected");
       // Make a HTTP request:
-      client.println("GET /462694/Mission_Possible/ex.php HTTP/1.0"); //Change this
+      client.println("GET /462694/Experiment/MissionPossible/user2.php HTTP/1.0"); //Change this
+      //client.println("GET /search?q=arduino HTTP/1.0");
       client.println();
     } 
     else {
