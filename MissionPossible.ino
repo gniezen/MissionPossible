@@ -5,6 +5,7 @@
 //Ethernet settings
 byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
 //String server = "cos-ugrad.swansea.ac.uk"; // Change this to server address
+IPAddress ip(137,44,6,225);
 IPAddress server(173,194,41,102); // Google
 EthernetClient client;
 boolean ethernetEnabled = true;
@@ -23,9 +24,6 @@ For proxy:
 
 */
 
-
-IPAddress ip(10, 80, 110, 200);
-
 //LED strip settings
 uint16_t stripLength = 240;
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(stripLength, 6, NEO_GRB + NEO_KHZ800);
@@ -34,13 +32,21 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(stripLength, 6, NEO_GRB + NEO_KHZ800
 long previousMillis = 0;
 long interval = 20; //delay between updates
 uint16_t t = 0; //time step
+long previousPoll = 0;
+long pollInterval = 10000; //10s
+
+//Fading variables
+uint16_t fader = 255;
+boolean fadingOut = true;
 
 // Set up cars
-uint8_t nrCars = 10;
-uint16_t currentPos[] = {0,0,0,0,0,0,0,0,0,0};
-uint32_t color[] = {0,0,0,0,0,0,0,0,0,0};
-uint8_t velocity[] = {1,2,3,4,5,6,7,8,9,10};
-
+const uint8_t nrCars = 10;
+//uint16_t currentPos[] = {0,0,0,0,0,0,0,0,0,0};
+uint16_t currentPos[] = {0,4,8,12,16,20,24,28,32,36};
+uint32_t color[nrCars];
+int velocity[] = {1,2,3,4,5,6,7,8,9,10};
+//uint8_t velocity[] = {0,0,0,0,0,0,0,0,0,0};
+int pulsing[]= {false,false,false,false,false,false,false,false,false,false};
 
 void setup() {
   strip.begin();
@@ -48,8 +54,16 @@ void setup() {
   randomSeed(analogRead(0));
   
   //Initialise car colours
-  for(int i=0; i<nrCars;i++)
-    color[i] = Wheel(random(255));
+  color[0] = strip.Color(0xFF,0,0); //red
+  color[1] = strip.Color(0xFF,0x7A,0); //orange
+  color[2] = strip.Color(128,0,128); //purple
+  color[3] = strip.Color(0,0xFF,0); //green
+  color[4] = strip.Color(255,255,0); //yellow
+  color[5] = strip.Color(0x03,0x89,0x9C); //turquoise
+  color[6] = strip.Color(0x33,0x33,0x33); //silver
+  color[7] = strip.Color(255,20,147); //pink
+  color[8] = strip.Color(0,0,255 ); //blue
+  color[9] = strip.Color(0xFF,0xFF,0xFF); //white
   
   if(ethernetEnabled) {
     Serial.begin(9600); //Wait for serial monitor
@@ -66,44 +80,47 @@ void setup() {
     
     // give the Ethernet shield a second to initialize:
     delay(1000);
+    connectToServer();
+  }
+}
+
+void connectToServer() {
     Serial.println("connecting...");
   
     // if you get a connection, report back via serial:
-    if (client.connect("cos-ugrad.swansea.ac.uk", 80)) {
-      //if (client.connect(server, 80)) {
+    //if (client.connect("cos-ugrad.swansea.ac.uk", 80)) {
+    if (client.connect(ip,8000)) {
+    //if (client.connect(server, 80)) {
       Serial.println("connected");
       // Make a HTTP request:
-      client.println("GET /462694/Experiment/MissionPossible/user2.php HTTP/1.0"); //Change this
+      //client.println("GET /462694/Experiment/MissionPossible/user2.php HTTP/1.0"); //Change this
       //client.println("GET /search?q=arduino HTTP/1.0");
+      client.println("GET /test.html HTTP/1.0");
       client.println();
     } 
     else {
       // if you didn't get a connection to the server:
       Serial.println("connection failed");
     }
-  }
-  
-  
-  
 }
 
-void readPrint() {
-  // if there are incoming bytes available 
-  // from the server, read them and print them:
-  if (client.available()) {
-    char c = client.read();
-    Serial.print(c);
-  }
-}
 
 void loop() {
   
   uint8_t length = 4; //length of car
   
-  if(ethernetEnabled)
-    readPrint(); //Read values from server
-  
   unsigned long currentMillis = millis();
+  
+  if(currentMillis - previousPoll > pollInterval) {
+    
+    previousPoll = currentMillis; // save the last time we polled the server
+    
+    ethernetEnabled = true;
+    connectToServer();  
+  }
+  
+  if(ethernetEnabled)
+    getData(); //Read values from server
   
   if(currentMillis - previousMillis > interval) {
     
@@ -123,6 +140,18 @@ void loop() {
       t+=1;
       if(t == strip.numPixels())
         t = 0; //restart
+        
+      
+      //Signal for fading in or out  
+      if(fadingOut)
+        fader -= 15; //preferably a multiple of 255
+      else
+        fader += 15;
+      
+      if(fader >= 255)
+        fadingOut = true;
+      if(fader <= 0)
+        fadingOut = false;
     
    }
   
@@ -166,7 +195,11 @@ void race(uint8_t length,uint16_t i) {
         strip.setPixelColor(currentPos[nr]-1,strip.Color(0,0,0)); //Clear previous position
      }
      
-     car(color[nr],length,currentPos[nr]);
+     if(pulsing[nr]) { 
+       car(fade(color[nr]),length,currentPos[nr]);
+     }else{
+       car(color[nr],length,currentPos[nr]);
+     } 
        
   }
   
@@ -185,14 +218,56 @@ uint32_t Wheel(byte WheelPos) {
   }
 }
 
-/* To transition between two colours:
+uint32_t fade(uint32_t colour) {
 
-for(int i = 0; i < n; i++) // larger values of 'n' will give a smoother/slower transition.
-{
-   Rnew = Rstart + (Rend - Rstart) * i / n;
-   Gnew = Gstart + (Gend - Gstart) * i / n;
-   Bnew = Bstart + (Bend - Bstart) * i / n;
-// set pixel color here
+  // Extract rgb values from packed 32-bit colour value and multiply with fader
+  uint8_t newR = fader/255.0*((colour >> 16) & 0xff); //mask is necessary if upper 8 bits is used for other purposes
+  uint8_t newG = fader/255.0*((colour >> 8) & 0xff);
+  uint8_t newB = fader/255.0*(colour & 0xff);
+  
+  return strip.Color(newR,newG,newB);
 }
 
-*/
+boolean getData() {
+  int sensorID;
+  int vel;
+  int fading;
+  
+  // if there are incoming bytes available 
+  // from the server, read them and print them:
+  if (client.available()) {
+    char c = client.read();
+    
+    if(c == '(') {
+      sensorID = client.read() - '0'; 
+      
+      if(client.read() == ',') {
+        vel = client.read() - '0';
+        
+        if(client.read() == ',') {
+          fading = client.read() - '0';
+          
+          if(client.read() == ')') {
+            Serial.println("Parsing successful.");
+            Serial.println(sensorID);
+            Serial.println(vel);
+            Serial.println(fading);
+            
+            velocity[sensorID] = vel;
+            if(fading == 1)
+              pulsing[sensorID] = true;
+            else
+              pulsing[sensorID] = false;
+
+            return true;
+          }
+        }
+      }
+      
+      Serial.println("Error in parsing data");
+      return false;
+    }
+   
+    Serial.print(c); //Print all other info to serial
+  }
+}
