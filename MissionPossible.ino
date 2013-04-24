@@ -189,7 +189,7 @@ void race(uint8_t length,uint16_t i) {
   
   for(int nr = 0; nr < nrCars; nr++) {
         
-     if((i % 10) < velocity[nr]) { //update position based on velocity
+     if((i % 10) <= velocity[nr]) { //update position based on velocity
         currentPos[nr] +=1;
         strip.setPixelColor(currentPos[nr]-1,strip.Color(0,0,0)); //Clear previous position
      }
