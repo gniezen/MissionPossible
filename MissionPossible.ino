@@ -40,9 +40,10 @@ uint16_t fader = 255;
 boolean fadingOut = true;
 
 // Set up cars
-const uint8_t nrCars = 10;
+const uint8_t nrCars = 10; // number of cars
+uint8_t length = 4; //length of car
 //uint16_t currentPos[] = {0,0,0,0,0,0,0,0,0,0};
-uint16_t currentPos[] = {0,4,8,12,16,20,24,28,32,36};
+uint16_t currentPos[] = {0,5,10,15,20,25,30,35,40,45};
 uint32_t color[nrCars];
 int velocity[] = {1,2,3,4,5,6,7,8,9,10};
 //uint8_t velocity[] = {0,0,0,0,0,0,0,0,0,0};
@@ -107,8 +108,6 @@ void connectToServer() {
 
 void loop() {
   
-  uint8_t length = 4; //length of car
-  
   unsigned long currentMillis = millis();
   
   if(currentMillis - previousPoll > pollInterval) {
@@ -138,7 +137,7 @@ void loop() {
       race(length,t); 
     
       t+=1;
-      if(t == strip.numPixels())
+      if(t == 255)
         t = 0; //restart
         
       
@@ -190,7 +189,7 @@ void race(uint8_t length,uint16_t i) {
   
   for(int nr = 0; nr < nrCars; nr++) {
         
-     if(i % velocity[nr] == 0) { //update position based on velocity
+     if((i % 10) < velocity[nr]) { //update position based on velocity
         currentPos[nr] +=1;
         strip.setPixelColor(currentPos[nr]-1,strip.Color(0,0,0)); //Clear previous position
      }
