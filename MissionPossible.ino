@@ -5,8 +5,8 @@
 //Ethernet settings
 byte mac[] = {  0x90, 0xA2, 0xDA, 0x0D, 0xA6, 0xA5 };
 //String server = "cos-ugrad.swansea.ac.uk"; // Change this to server address
-IPAddress ip(137,44,6,225);
-IPAddress server(173,194,41,102); // Google
+IPAddress ip(10,80,110,50);
+IPAddress server(10,80,110,40);
 EthernetClient client;
 boolean ethernetEnabled = true;
 
@@ -33,7 +33,7 @@ long previousMillis = 0;
 long interval = 20; //delay between updates
 uint16_t t = 0; //time step
 long previousPoll = 0;
-long pollInterval = 10000; //10s
+long pollInterval = 600000; //1 min.
 
 //Fading variables
 uint16_t fader = 255;
@@ -45,8 +45,8 @@ uint8_t length = 4; //length of car
 //uint16_t currentPos[] = {0,0,0,0,0,0,0,0,0,0};
 uint16_t currentPos[] = {0,5,10,15,20,25,30,35,40,45};
 uint32_t color[nrCars];
-int velocity[] = {1,2,3,4,5,6,7,8,9,10};
-//uint8_t velocity[] = {0,0,0,0,0,0,0,0,0,0};
+//int velocity[] = {1,2,3,4,5,6,7,8,9,10};
+int velocity[] = {0,0,0,0,0,0,0,0,0,0};
 int pulsing[]= {false,false,false,false,false,false,false,false,false,false};
 
 void setup() {
@@ -55,29 +55,29 @@ void setup() {
   randomSeed(analogRead(0));
   
   //Initialise car colours
-  color[0] = strip.Color(0xFF,0,0); //red
-  color[1] = strip.Color(0xFF,0x7A,0); //orange
-  color[2] = strip.Color(128,0,128); //purple
-  color[3] = strip.Color(0,0xFF,0); //green
-  color[4] = strip.Color(255,255,0); //yellow
-  color[5] = strip.Color(0x03,0x89,0x9C); //turquoise
-  color[6] = strip.Color(0x33,0x33,0x33); //silver
-  color[7] = strip.Color(255,20,147); //pink
-  color[8] = strip.Color(0,0,255 ); //blue
+  color[0] = strip.Color(0xFF,0,0); //red 
+  color[1] = strip.Color(0xFF,0x7A,0); //orange 
+  color[2] = strip.Color(128,0,128); //purple 
+  color[3] = strip.Color(0,0xFF,0); //green 
+  color[4] = strip.Color(255,255,0); //yellow 
+  color[5] = strip.Color(0x03,0x89,0x9C); //turquoise 
+  color[6] = strip.Color(0x33,0x33,0x33); //silver 
+  color[7] = strip.Color(255,20,147); //pink 
+  color[8] = strip.Color(0,0,255 ); //blue 
   color[9] = strip.Color(0xFF,0xFF,0xFF); //white
   
   if(ethernetEnabled) {
     Serial.begin(9600); //Wait for serial monitor
     
-    Serial.println("Waiting for DHCP..");
+    /*Serial.println("Waiting for DHCP..");
     // start the Ethernet connection:
     if (Ethernet.begin(mac) == 0) {
       Serial.println("Failed to configure Ethernet using DHCP");
       // no point in carrying on, so do nothing forevermore:
       for(;;)
         ;
-    }
-    //Ethernet.begin(mac,ip); //for static IP
+    }*/
+    Ethernet.begin(mac,ip); //for static IP
     
     // give the Ethernet shield a second to initialize:
     delay(1000);
@@ -87,21 +87,54 @@ void setup() {
 
 void connectToServer() {
     Serial.println("connecting...");
+    
+    //if (client.connect("cos-ugrad.swansea.ac.uk", 80)) { 
+    if (client.connect(server, 8080)) { 
+    //if (client.connect("proxy.ysgolccc.org.uk", 8080)) {  // This is connecting to the proxy
+      Serial.println("connected");
+  
+      // Make a HTTP request through proxy:
+    client.println("GET http://cos-ugrad.swansea.ac.uk/462694/Project/MissionPossible/missionPossible.php HTTP/1.1");
+      
+      //client.println("GET http://www.google.com/search?q=arduino HTTP/1.1");
+   //   client.println("GET /462694/Project/MissionPossible/missionPossible.php HTTP/1.0");
+ /*   client.println("CONNECT http://www.google.com:80 HTTP/1.1");
+    client.println();
+    
+    client.println("GET http://www.google.com/search?q=arduino HTTP/1.1");
+    client.println("Proxy-Connection: Keep-Alive");
+    client.println("User-Agent: Mozilla/5.0 [en] (X11; I; Linux 2.2.3 i686)");
+    client.println("Host: www.google.com");
+    client.println("Accept: image/gif, image/jpeg,");
+    client.println("Accept-Language:en-us,en;q=0.5");
+    client.println("Accept-Encoding:gzip,deflate");
+    client.println("Accept-Charset: iso-8859-1, *, utf-8"); */
+
+    
+
+      client.println();
+    }
   
     // if you get a connection, report back via serial:
-    //if (client.connect("cos-ugrad.swansea.ac.uk", 80)) {
-    if (client.connect(ip,8000)) {
+  /*  if (client.connect("cos-ugrad.swansea.ac.uk", 80)) {
+    //if (client.connect(ip,8000)) {
     //if (client.connect(server, 80)) {
       Serial.println("connected");
       // Make a HTTP request:
-      //client.println("GET /462694/Experiment/MissionPossible/user2.php HTTP/1.0"); //Change this
+      client.println("GET /462694/Project/MissionPossible/missionPossible.php HTTP/1.0"); //Change this
       //client.println("GET /search?q=arduino HTTP/1.0");
-      client.println("GET /test.html HTTP/1.0");
+      //client.println("GET /test.html HTTP/1.0");
       client.println();
-    } 
+    } */
     else {
       // if you didn't get a connection to the server:
       Serial.println("connection failed");
+    }
+    
+    //Delay(1000);
+    
+    if(client.connected()){
+      Serial.println("Is connected.");
     }
 }
 
